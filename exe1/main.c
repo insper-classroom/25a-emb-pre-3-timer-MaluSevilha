@@ -49,11 +49,9 @@ int main() {
             timer_ligado = 1 - timer_ligado;
 
             if (timer_ligado){
-                if (!add_repeating_timer_us(1000000 / timer_hz, timer_flag, NULL, &timer)) {
-                    printf("Failed to add timer\n");
-                }
+                add_repeating_timer_us(1000000 / timer_hz, timer_callback, NULL, &timer);
             } else{
-                cancel_repeating_timer(timer);
+                cancel_repeating_timer(&timer);
             }
             
             flag_f_r = 0;
