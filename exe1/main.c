@@ -6,7 +6,6 @@ const int BTN_PIN_R = 28;
 const int LED_PIN_R = 4;
 
 volatile int flag_f_r = 0;
-
 volatile int timer_flag = 0;
 
 bool timer_callback(repeating_timer_t *rt) {
@@ -17,8 +16,7 @@ bool timer_callback(repeating_timer_t *rt) {
 void btn_callback(uint gpio, uint32_t events) {
     if (events == 0x4) { // fall edge
         flag_f_r = 1;
-    } else if (events == 0x8) { // rise edge
-    }
+    } else if(events == 0x8){}
 }
 
 int main() {
@@ -32,29 +30,34 @@ int main() {
 
     gpio_set_irq_enabled_with_callback(BTN_PIN_R, GPIO_IRQ_EDGE_FALL, true, &btn_callback);                      
 
-    int timer_hz = 2;
+    repeating_timer_t timer;
+    int timer_T = 500000;
     int led_status = 0;
     int timer_ligado = 0;
 
     while (true) {
 
         if(timer_flag){
-            led_status = !led_status;
+            led_status = 1 - led_status;            
             gpio_put(LED_PIN_R, led_status);
             timer_flag = 0;
         }
 
         if (flag_f_r) {
-            repeating_timer_t timer;
-            timer_ligado = 1 - timer_ligado;
-
-            if (timer_ligado){
-                add_repeating_timer_us(1000000 / timer_hz, timer_callback, NULL, &timer);
-            } else{
-                cancel_repeating_timer(&timer);
-            }
-            
             flag_f_r = 0;
+            
+            if (!timer_ligado){
+                if (add_repeating_timer_us(timer_T, timer_callback, NULL, &timer)){
+                    timer_ligado = 1;
+                } 
+            } else {
+                cancel_repeating_timer(&timer);
+                led_status = 0;
+                timer_ligado = 0;
+                gpio_put(LED_PIN_R, led_status);
+            }
         }
+
+        printf("%d", led_status);
     }
 }
