@@ -4,6 +4,7 @@
 
 const int BTN_PIN_R = 28;
 const int LED_PIN_R = 4;
+const repeating_timer_t TIMER;
 
 volatile int flag_f_r = 0;
 volatile int timer_flag = 0;
@@ -30,7 +31,6 @@ int main() {
 
     gpio_set_irq_enabled_with_callback(BTN_PIN_R, GPIO_IRQ_EDGE_FALL, true, &btn_callback);                      
 
-    repeating_timer_t timer;
     int timer_T = 500000;
     int led_status = 0;
     int timer_ligado = 0;
@@ -47,17 +47,15 @@ int main() {
             flag_f_r = 0;
             
             if (!timer_ligado){
-                if (add_repeating_timer_us(timer_T, timer_callback, NULL, &timer)){
+                if (add_repeating_timer_us(timer_T, timer_callback, NULL, &TIMER)){
                     timer_ligado = 1;
                 } 
             } else {
-                cancel_repeating_timer(&timer);
+                cancel_repeating_timer(&TIMER);
                 led_status = 0;
                 timer_ligado = 0;
                 gpio_put(LED_PIN_R, led_status);
             }
         }
-
-        printf("%d", led_status);
     }
 }
